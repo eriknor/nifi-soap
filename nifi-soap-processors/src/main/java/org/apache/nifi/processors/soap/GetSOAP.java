@@ -25,6 +25,7 @@ import org.apache.axis2.Constants;
 import org.apache.axis2.addressing.EndpointReference;
 import org.apache.axis2.client.Options;
 import org.apache.axis2.client.ServiceClient;
+import org.apache.commons.httpclient.Header;
 
 import org.apache.axis2.transport.http.HTTPConstants;
 import org.apache.axis2.transport.http.impl.httpclient3.HttpTransportPropertiesImpl;
@@ -127,6 +128,16 @@ public class GetSOAP extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    protected static final PropertyDescriptor HEADER = new PropertyDescriptor
+            .Builder()
+            .name("Headers")
+            .defaultValue(null)
+            .description("Extra SOAP headers to use, formatted 'name:value name1:value1 name2:value2")
+            .required(false)
+            .expressionLanguageSupported(false)
+        //    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
     protected static final PropertyDescriptor SO_TIMEOUT = new PropertyDescriptor
             .Builder()
             .name("Socket Timeout")
@@ -167,6 +178,7 @@ public class GetSOAP extends AbstractProcessor {
         descriptors.add(USER_NAME);
         descriptors.add(PASSWORD);
         descriptors.add(USER_AGENT);
+        descriptors.add(HEADER);
         descriptors.add(SO_TIMEOUT);
         descriptors.add(CONNECTION_TIMEOUT);
         this.descriptors = Collections.unmodifiableList(descriptors);
@@ -209,7 +221,31 @@ public class GetSOAP extends AbstractProcessor {
         options.setCallTransportCleanup(true);
         options.setProperty(HTTPConstants.CHUNKED, false);
 
+        if(context.getProperty(HEADER).getValue()!=null&&!"".equals(context.getProperty(HEADER).getValue().trim())){
+        	try{
+        	//set custom headers
+    		List list = new ArrayList();  
+        	String[] headers = context.getProperty(HEADER).getValue().split(" ");
+        	for(String header:headers){
+        		String[] nv = header.split(":");
+        		  
+        		// Create an instance of org.apache.commons.httpclient.Header  
+        		Header h = new Header();  
+        		  
+        		// Http header. Name : user, Value : admin  
+        		h.setName(nv[0]);  
+        		h.setValue(nv[1]);  
+        		    
+        		list.add(h);  
+        	}
+    		options.setProperty(org.apache.axis2.transport.http.HTTPConstants.HTTP_HEADERS, list); 
+        	}catch(Exception e){
+        		getLogger().error("Failed to parse headers value. "+e);
+                throw new ProcessException(e);
+        	}
+        }
 
+        
         options.setProperty(HTTPConstants.USER_AGENT, context.getProperty(USER_AGENT).getValue());
         options.setProperty(HTTPConstants.SO_TIMEOUT, context.getProperty(SO_TIMEOUT).asInteger());
         options.setProperty(HTTPConstants.CONNECTION_TIMEOUT, context.getProperty(CONNECTION_TIMEOUT).asInteger());
@@ -227,7 +263,7 @@ public class GetSOAP extends AbstractProcessor {
         }
         try {
             serviceClient = new ServiceClient();
-            serviceClient.setOptions(options);
+           serviceClient.setOptions(options);
         } catch (AxisFault axisFault) {
             getLogger().error("Failed to create webservice client, please check that the service endpoint is available and " +
                     "the property is valid.", axisFault);
