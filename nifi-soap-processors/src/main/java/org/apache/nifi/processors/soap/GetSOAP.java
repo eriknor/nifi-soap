@@ -46,6 +46,7 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StopWatch;
+import org.apache.axis2.transport.http.HttpTransportProperties;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -138,6 +139,45 @@ public class GetSOAP extends AbstractProcessor {
         //    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    protected static final PropertyDescriptor PROXY_NAME = new PropertyDescriptor
+            .Builder()
+            .name("Proxy Name")
+            .defaultValue(null)
+            .description("Proxy URL")
+            .required(false)
+            .expressionLanguageSupported(false)
+        //    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    protected static final PropertyDescriptor PROXY_PORT = new PropertyDescriptor
+            .Builder()
+            .name("Proxy Port")
+            .defaultValue(null)
+            .description("Proxy Port")
+            .required(false)
+            .expressionLanguageSupported(false)
+        //    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+    protected static final PropertyDescriptor PROXY_USER = new PropertyDescriptor
+            .Builder()
+            .name("Proxy Username")
+            .defaultValue(null)
+            .description("Proxy username if required.")
+            .required(false)
+            .expressionLanguageSupported(false)
+        //    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+    protected static final PropertyDescriptor PROXY_PWD = new PropertyDescriptor
+            .Builder()
+            .name("Proxy password")
+            .defaultValue(null)
+            .description("Proxy password")
+            .required(false)
+            .expressionLanguageSupported(false)
+        //    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+
     protected static final PropertyDescriptor SO_TIMEOUT = new PropertyDescriptor
             .Builder()
             .name("Socket Timeout")
@@ -181,6 +221,11 @@ public class GetSOAP extends AbstractProcessor {
         descriptors.add(HEADER);
         descriptors.add(SO_TIMEOUT);
         descriptors.add(CONNECTION_TIMEOUT);
+        descriptors.add(PROXY_NAME);
+        descriptors.add(PROXY_PORT);
+        descriptors.add(PROXY_USER);
+        descriptors.add(PROXY_PWD);
+
         this.descriptors = Collections.unmodifiableList(descriptors);
 
     }
@@ -245,7 +290,19 @@ public class GetSOAP extends AbstractProcessor {
         	}
         }
 
-        
+if(context.getProperty(PROXY_NAME).getValue()!=null&&!"".equals(context.getProperty(PROXY_NAME).getValue().trim())){
+HttpTransportProperties.ProxyProperties pp = 
+    new HttpTransportProperties.ProxyProperties();
+ pp.setProxyName(context.getProperty(PROXY_NAME).getValue());
+ pp.setProxyPort(Integer.parseInt(context.getProperty(PROXY_PORT).getValue()));
+if(context.getProperty(PROXY_USER).getValue()!=null&&!"".equals(context.getProperty(PROXY_USER).getValue().trim())){
+ pp.setUserName(context.getProperty(PROXY_USER).getValue());
+}
+if(context.getProperty(PROXY_PWD).getValue()!=null&&!"".equals(context.getProperty(PROXY_PWD).getValue().trim())){
+ pp.setPassWord(context.getProperty(PROXY_PWD).getValue());
+}
+ options.setProperty(HTTPConstants.PROXY,pp);
+     }   
         options.setProperty(HTTPConstants.USER_AGENT, context.getProperty(USER_AGENT).getValue());
         options.setProperty(HTTPConstants.SO_TIMEOUT, context.getProperty(SO_TIMEOUT).asInteger());
         options.setProperty(HTTPConstants.CONNECTION_TIMEOUT, context.getProperty(CONNECTION_TIMEOUT).asInteger());
