@@ -141,23 +141,19 @@ public class GetSOAP extends AbstractProcessor {
 
     protected static final PropertyDescriptor PROXY_NAME = new PropertyDescriptor
             .Builder()
-            .name("Proxy Name")
-            .defaultValue(null)
-            .description("Proxy URL")
-            .required(false)
-            .expressionLanguageSupported(false)
-        //    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+    		.name("Proxy Host")
+			.description("The fully qualified hostname or IP address of the proxy server")
+			.required(false)
+			.addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+			.build();
 
-    protected static final PropertyDescriptor PROXY_PORT = new PropertyDescriptor
-            .Builder()
-            .name("Proxy Port")
-            .defaultValue(null)
-            .description("Proxy Port")
-            .required(false)
-            .expressionLanguageSupported(false)
-        //    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+	public static final PropertyDescriptor PROXY_PORT = new PropertyDescriptor
+			.Builder()
+			.name("Proxy Port")
+			.description("The port of the proxy server")
+			.required(false)
+			.addValidator(StandardValidators.PORT_VALIDATOR)
+			.build();
     protected static final PropertyDescriptor PROXY_USER = new PropertyDescriptor
             .Builder()
             .name("Proxy Username")
@@ -290,19 +286,18 @@ public class GetSOAP extends AbstractProcessor {
         	}
         }
 
-if(context.getProperty(PROXY_NAME).getValue()!=null&&!"".equals(context.getProperty(PROXY_NAME).getValue().trim())){
-HttpTransportProperties.ProxyProperties pp = 
-    new HttpTransportProperties.ProxyProperties();
- pp.setProxyName(context.getProperty(PROXY_NAME).getValue());
- pp.setProxyPort(Integer.parseInt(context.getProperty(PROXY_PORT).getValue()));
-if(context.getProperty(PROXY_USER).getValue()!=null&&!"".equals(context.getProperty(PROXY_USER).getValue().trim())){
- pp.setUserName(context.getProperty(PROXY_USER).getValue());
-}
-if(context.getProperty(PROXY_PWD).getValue()!=null&&!"".equals(context.getProperty(PROXY_PWD).getValue().trim())){
- pp.setPassWord(context.getProperty(PROXY_PWD).getValue());
-}
- options.setProperty(HTTPConstants.PROXY,pp);
-     }   
+		if(context.getProperty(PROXY_NAME).getValue()!=null&&!"".equals(context.getProperty(PROXY_NAME).getValue().trim())){
+			HttpTransportProperties.ProxyProperties pp = new HttpTransportProperties.ProxyProperties();
+ 			pp.setProxyName(context.getProperty(PROXY_NAME).getValue());
+ 			pp.setProxyPort(Integer.parseInt(context.getProperty(PROXY_PORT).getValue()));
+			if(context.getProperty(PROXY_USER).getValue()!=null&&!"".equals(context.getProperty(PROXY_USER).getValue().trim())){
+ 				pp.setUserName(context.getProperty(PROXY_USER).getValue());
+			}
+			if(context.getProperty(PROXY_PWD).getValue()!=null&&!"".equals(context.getProperty(PROXY_PWD).getValue().trim())){
+ 				pp.setPassWord(context.getProperty(PROXY_PWD).getValue());
+			}
+ 			options.setProperty(HTTPConstants.PROXY,pp);
+     	}   
         options.setProperty(HTTPConstants.USER_AGENT, context.getProperty(USER_AGENT).getValue());
         options.setProperty(HTTPConstants.SO_TIMEOUT, context.getProperty(SO_TIMEOUT).asInteger());
         options.setProperty(HTTPConstants.CONNECTION_TIMEOUT, context.getProperty(CONNECTION_TIMEOUT).asInteger());
