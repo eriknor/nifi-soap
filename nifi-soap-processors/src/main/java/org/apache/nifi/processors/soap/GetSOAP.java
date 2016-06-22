@@ -47,6 +47,8 @@ import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StopWatch;
 import org.apache.axis2.transport.http.HttpTransportProperties;
+import org.apache.nifi.components.ValidationContext;
+import org.apache.nifi.components.ValidationResult;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -245,6 +247,21 @@ public class GetSOAP extends AbstractProcessor {
                 .name(propertyDescriptorName).addValidator(StandardValidators.NON_EMPTY_VALIDATOR).dynamic(true)
                 .build();
     }
+    @Override
+    protected Collection<ValidationResult> customValidate(final ValidationContext context) {
+        final Collection<ValidationResult> results = new ArrayList<>();
+
+         if (context.getProperty(PROXY_NAME).isSet() && !context.getProperty(PROXY_PORT).isSet()) {
+            results.add(new ValidationResult.Builder()
+                    .explanation("Proxy Host was set but no Proxy Port was specified")
+                    .valid(false)
+                    .subject("Proxy server configuration")
+                    .build());
+        }
+
+        return results;
+    }
+
 
     @OnScheduled
     public void onScheduled(final ProcessContext context) {
