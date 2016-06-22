@@ -262,7 +262,7 @@ public class GetSOAP extends AbstractProcessor {
         options.setCallTransportCleanup(true);
         options.setProperty(HTTPConstants.CHUNKED, false);
 
-        if(context.getProperty(HEADER).getValue()!=null&&!"".equals(context.getProperty(HEADER).getValue().trim())){
+        if(context.getProperty(HEADER).isSet()){
         	try{
         	//set custom headers
     		List list = new ArrayList();  
@@ -286,14 +286,14 @@ public class GetSOAP extends AbstractProcessor {
         	}
         }
 
-		if(context.getProperty(PROXY_NAME).getValue()!=null&&!"".equals(context.getProperty(PROXY_NAME).getValue().trim())){
+		if(context.getProperty(PROXY_NAME).isSet()){
 			HttpTransportProperties.ProxyProperties pp = new HttpTransportProperties.ProxyProperties();
  			pp.setProxyName(context.getProperty(PROXY_NAME).getValue());
- 			pp.setProxyPort(Integer.parseInt(context.getProperty(PROXY_PORT).getValue()));
-			if(context.getProperty(PROXY_USER).getValue()!=null&&!"".equals(context.getProperty(PROXY_USER).getValue().trim())){
+ 			pp.setProxyPort(context.getProperty(PROXY_PORT).asInteger());
+			if(context.getProperty(PROXY_USER).isSet()){
  				pp.setUserName(context.getProperty(PROXY_USER).getValue());
 			}
-			if(context.getProperty(PROXY_PWD).getValue()!=null&&!"".equals(context.getProperty(PROXY_PWD).getValue().trim())){
+			if(context.getProperty(PROXY_PWD).isSet()){
  				pp.setPassWord(context.getProperty(PROXY_PWD).getValue());
 			}
  			options.setProperty(HTTPConstants.PROXY,pp);
